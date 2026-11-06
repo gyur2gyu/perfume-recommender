@@ -226,6 +226,19 @@ h1,h2,h3{word-break:keep-all}
 .exp-chip:hover .cx{stroke:var(--ink)}
 .exp-chip:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 .pk-list{margin:8px 0 22px;gap:7px}
+
+/* 향 선택 카드: 이모지 + 라벨 (막대그래프와 같은 아이콘 체계) */
+.oe,.hb-label .be{font-style:normal;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.grid .opt b{display:flex;align-items:center;gap:8px;line-height:1.35}
+.grid .opt .oe{flex:none;width:22px;text-align:center;font-size:18px;line-height:1}
+.grid .opt>span{margin-top:5px;word-break:keep-all}
+.grid .opt .rk{top:-8px;right:-6px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--acc);color:var(--onacc);font-size:12px;font-weight:800;opacity:0;transform:scale(.5);transition:opacity .18s,transform .18s}
+.grid .opt.on .rk{opacity:1;transform:scale(1);color:var(--onacc);font-weight:800}
+.grid .opt b{word-break:keep-all}
+@media (max-width:360px){.grid .opt{padding:14px 12px}.grid .opt b{font-size:15px;gap:6px}.grid .opt .oe{width:20px;font-size:16px}}
+
+/* 안내 문구: 문장 단위 줄바꿈 + 균형 있는 줄 나눔 */
+.sub,.intro p,.exp-disclaimer{text-wrap:balance;word-break:keep-all}
 </style>
 </head>
 <body>
@@ -357,8 +370,8 @@ function reasons(r,a){
 // 생성형 AI 연결 지점: 서버(프록시) 주소를 넣으면 추천 이유를 AI가 작성합니다.
 const AI_ENDPOINT="";
 const Q=[
-{k:"likes",t:"좋아하는 향을 골라 주세요",s:"가장 좋아하는 향부터 차례로 두 가지를 선택해요."},
-{k:"avoid",t:"피하고 싶은 향이 있나요?",s:"여러 개 선택할 수 있고, 없으면 바로 넘어가도 돼요. 좋아한다고 고른 향은 선택할 수 없어요."},
+{k:"likes",t:"끌리는 향을 골라 주세요",s:"가장 끌리는 향부터 차례로 두 가지를 선택해요."},
+{k:"avoid",t:"피하고 싶은 향이 있나요?",s:"여러 개 선택할 수 있고, 없으면 바로 넘어가도 돼요.<br>끌린다고 고른 향은 선택할 수 없어요."},
 {k:"longevity",t:"어느 정도의 지속력이 좋을까요?",o:OPT.longevity},
 {k:"season",t:"주로 어느 계절에 쓰실 건가요?",o:OPT.season},
 {k:"occasion",t:"어떤 상황에서 쓰실 건가요?",o:OPT.occasion},
@@ -368,7 +381,8 @@ let i=-1,RES=null,EXPERT_SELECTED=[],EXPERT_RESULT=null,EXPERT_QUERY="";const $=
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const won=n=>n.toLocaleString("ko-KR")+"원";
 const nm=s=>String(s).replace(/오 드 (\S+)/g,"오드$1");
-const EMO={"클린·비누":"🧼","시트러스":"🍋","프레시":"💧","머스크":"🤍","알데하이딕":"✨","파우더리":"☁️","아로마틱":"🌿","허벌":"🌱","플로럴":"🌸","그린":"🍃","우디":"🪵","마린·솔티":"🌊","아쿠아틱":"💦","미네랄":"🪨","앰버":"🧡","화이트 플로럴":"🌼","티":"🍵","모시·어시":"🍄","프루티":"🍑","바닐릭":"🍦","스위트":"🍬","레더":"👜","프레시 스파이시":"🌶️","크리미":"🥛","메탈릭":"🔩","웜 스파이시":"🌶️","스모키":"💨","오우드":"🌳","구르망":"🍰","토바코":"🍂","너티":"🥜","트로피컬":"🍍","부지":"🥃","인센스":"🪔","커피":"☕","발사믹":"🍯"};
+const EMO={"클린·비누":"🧼","시트러스":"🍋","프레시":"💧","머스크":"🤍","알데하이딕":"✨","파우더리":"☁️","아로마틱":"🍃","허벌":"🌱","플로럴":"🌸","그린":"🌿","우디":"🪵","마린·솔티":"🌊","아쿠아틱":"💦","미네랄":"🪨","앰버":"🧡","화이트 플로럴":"🌼","티":"🍵","모시·어시":"🍄","프루티":"🍑","바닐릭":"🍦","스위트":"🍬","레더":"👜","프레시 스파이시":"🌶️","크리미":"🥛","메탈릭":"🔩","웜 스파이시":"🌶️","스모키":"💨","오우드":"🌳","구르망":"🍰","토바코":"🍂","너티":"🥜","트로피컬":"🍍","부지":"🥃","인센스":"🪔","커피":"☕","발사믹":"🍯"};
+const CE={"클린·비누":"🧼","시트러스":"🍋","플로럴":"🌸","프루티":"🍑","그린·허브":"🌿","우디":"🪵","머스크·파우더리":"☁️","구르망":"🍰","앰버·스파이시":"🧡","아쿠아틱·마린":"🌊","스모키·레더":"💨"};
 const noteList=(label,arr)=>'<div class="nrow">'+(label?'<span class="nl">'+label+'</span>':'')+'<div class="chips">'+arr.map(x=>'<em>'+esc(String(x).trim())+'</em>').join("")+'</div></div>';
 const ans=()=>({first:A.likes[0],second:A.likes[1],avoid:A.avoid,longevity:A.longevity,season:A.season,occasion:A.occasion,budget:A.budget});
 function chrome(){
@@ -389,10 +403,10 @@ function intro(d){d.classList.add("intro");
 }
 function ask(d,q){let h='<div class="qn">질문 '+(i+1)+' / 6</div><h2>'+q.t+'</h2><p class="sub">'+(q.s||"")+'</p>';
  if(q.k==="likes"||q.k==="avoid"){
-  h+='<div class="grid">'+CATS.map(c=>'<button class="opt" data-v="'+esc(c)+'"'+(q.k==="avoid"&&A.likes.includes(c)?' disabled':'')+'><b>'+esc(c)+'</b><span>'+DESC[c]+'</span><div class="rk"></div></button>').join("")+'</div><div class="foot"><button class="btn" id="nx"></button></div>';
+  h+='<div class="grid">'+CATS.map(c=>'<button class="opt" data-v="'+esc(c)+'"'+(q.k==="avoid"&&A.likes.includes(c)?' disabled':'')+'><b><i class="oe" aria-hidden="true">'+(CE[c]||"◦")+'</i>'+esc(c).replace("·","·<wbr>")+'</b><span>'+DESC[c]+'</span><div class="rk"></div></button>').join("")+'</div><div class="foot"><button class="btn" id="nx"></button></div>';
   d.innerHTML=h;const btns=[...d.querySelectorAll(".opt")],nx=$("nx");
   const paint=()=>{btns.forEach(b=>{const v=b.dataset.v;let on,r="";
-   if(q.k==="likes"){const x=A.likes.indexOf(v);on=x>-1;r=on?(x?"②":"①"):""}else{on=A.avoid.includes(v);r=on?"✓":""}
+   if(q.k==="likes"){const x=A.likes.indexOf(v);on=x>-1;r=on?String(x+1):""}else{on=A.avoid.includes(v);r=on?"✓":""}
    b.classList.toggle("on",on);b.querySelector(".rk").textContent=r});
    if(q.k==="likes"){nx.disabled=A.likes.length<2;nx.textContent=A.likes.length<2?(A.likes.length?"한 가지 더 골라 주세요":"두 가지를 골라 주세요"):"다음"}
    else nx.textContent=A.avoid.length?"다음":"피할 향 없음"};
