@@ -202,6 +202,30 @@ h1,h2,h3{word-break:keep-all}
 .bi{width:22px;height:22px}
 .bi circle{fill:var(--acc)}
 .bi path{stroke:var(--onacc)}
+
+/* 첫 화면 / 향수 선택 화면 정리 */
+.intro h1{font-size:clamp(22px,6.8vw,30px);white-space:nowrap;letter-spacing:-.04em}
+.entry-symbol{width:44px;height:44px;border-radius:12px;background:var(--tint);display:grid;place-items:center;margin-bottom:8px;line-height:1}
+.entry-symbol svg{width:24px;height:24px}
+.exp-picked{margin:18px 0 24px;padding:14px 14px 15px;min-height:0;border:1px dashed var(--line);border-radius:14px;transition:border-color .2s,background .2s}
+.exp-picked.has{border:1px solid var(--acc);background:var(--tint)}
+.exp-picked .exp-label{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 8px;font-size:13px}
+.exp-picked .exp-label em{font-style:normal;color:var(--mut);font-weight:500;font-variant-numeric:tabular-nums}
+.exp-picked .exp-chip{background:var(--sf)}
+.exp-pick-empty{margin:0;font-size:13px;color:var(--mut)}
+.exp-search-info{margin:10px 0 8px;font-size:12px;color:var(--mut)}
+.exp-label[for]{margin-top:0}
+
+/* 선택 칩: 브랜드(흐림)+이름, × 바로 옆 / 라벨 크기 */
+.exp-picked .exp-label{font-size:16px;font-weight:800;margin-bottom:12px}
+.exp-picked .exp-label em{font-size:14px}
+.exp-chips{gap:7px}
+.exp-picked .exp-chip{display:inline-flex;align-items:center;gap:5px;padding:6px 10px 6px 12px;font-size:13px;line-height:1.4;background:var(--sf);border:1px solid var(--line);color:var(--ink)}
+.exp-chip .cb{color:var(--mut);margin-right:1px}
+.exp-chip .cx{flex:none;width:12px;height:12px;margin-left:3px;fill:none;stroke:var(--mut);stroke-width:1.6;stroke-linecap:round}
+.exp-chip:hover .cx{stroke:var(--ink)}
+.exp-chip:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.pk-list{margin:8px 0 22px;gap:7px}
 </style>
 </head>
 <body>
@@ -358,9 +382,9 @@ function go(n){if(busy)return;busy=true;const cur=M.firstElementChild;const f=()
 function render(){chrome();M.innerHTML="";const d=document.createElement("section");d.className="step";M.appendChild(d);
  if(i===-1)return intro(d);if(i===-2)return expertChoose(d);if(i===-3)return expertAnalyze(d);if(i===-4)return expertResult(d);if(i<6)return ask(d,Q[i]);if(i===6)return analyze(d);result(d)}
 function intro(d){d.classList.add("intro");
- d.innerHTML='<h1>좋아하는 향수가<br>있나요?</h1><p>향수 경험에 맞춰 나에게 어울리는 향을 찾아드릴게요.</p>'
-  +'<div class="entry-options"><button class="entry-card" id="start-expert"><span class="entry-symbol">♡</span><b>네, 좋아하는 향수가 있어요</b><span>마음에 드는 향수로 취향을 분석하기</span></button>'
-  +'<button class="entry-card" id="start-novice"><span class="entry-symbol">✳</span><b>아직 잘 모르겠어요</b><span>6가지 질문으로 취향 찾아보기</span></button></div>';
+ d.innerHTML='<h1>좋아하는 향수가 있나요?</h1><p>향수 경험에 맞춰 나에게 어울리는 향을 찾아드릴게요.</p>'
+  +'<div class="entry-options"><button class="entry-card" id="start-expert"><span class="entry-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.2s-7.5-4.6-7.5-10.4A4.2 4.2 0 0 1 12 7.4a4.2 4.2 0 0 1 7.5 2.4c0 5.8-7.5 10.4-7.5 10.4z"/></svg></span><b>네, 좋아하는 향수가 있어요</b><span>마음에 드는 향수로 취향을 분석하기</span></button>'
+  +'<button class="entry-card" id="start-novice"><span class="entry-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15.6 8.4l-2.1 5.1-5.1 2.1 2.1-5.1z"/></svg></span><b>아직 잘 모르겠어요</b><span>6가지 질문으로 취향 찾아보기</span></button></div>';
  $("start-expert").onclick=()=>go(-2);$("start-novice").onclick=()=>go(0);
 }
 function ask(d,q){let h='<div class="qn">질문 '+(i+1)+' / 6</div><h2>'+q.t+'</h2><p class="sub">'+(q.s||"")+'</p>';
@@ -439,10 +463,10 @@ function findExpertProducts(query){
 }
 function expertChoose(d){
  d.innerHTML='<h2>좋아하는 향수를<br>선택해 주세요</h2>'
-  +'<p class="sub">1~5종을 선택할 수 있어요. 2종 이상 고르면 취향의 공통점을 더 잘 파악할 수 있어요.</p>'
+  +'<p class="sub">1~5종을 선택할 수 있어요.<br>2종 이상 고르면 취향의 공통점을 더 잘 파악할 수 있어요.</p>'
+  +'<div id="exp-picked" class="exp-picked" aria-live="polite"></div>'
   +'<label class="exp-label" for="perfume-search">향수 검색 (국문·영문)</label>'
   +'<input id="perfume-search" class="exp-search" type="search" placeholder="예: 디올, Sauvage, 소바쥬" autocomplete="off">'
-  +'<div id="exp-picked" class="exp-picked" aria-live="polite"></div>'
   +'<div id="exp-search-info" class="exp-search-info" role="status"></div>'
   +'<div id="exp-search-list" class="exp-search-list"></div>'
   +'<div class="foot"><button class="btn" id="expert-go" disabled>향수 선택 후 추천받기</button>'
@@ -451,18 +475,19 @@ function expertChoose(d){
  search.value=EXPERT_QUERY;
  const lookup=new Map(PERFUMES.map(p=>[p.id,p]));
  function paint(){
-   picked.innerHTML=EXPERT_SELECTED.length
-    ?'<div class="exp-label">선택한 향수 ('+EXPERT_SELECTED.length+'/5)</div><div class="exp-chips">'+EXPERT_SELECTED.map(id=>{
-      const p=lookup.get(id);return '<button type="button" class="exp-chip" data-remove="'+id+'" title="선택 해제">'+esc(p.koBrand+' '+p.koName)+' <b>×</b></button>'
+   picked.classList.toggle("has",EXPERT_SELECTED.length>0);
+   picked.innerHTML='<div class="exp-label">선택한 향수 <em>'+EXPERT_SELECTED.length+' / 5</em></div>'+(EXPERT_SELECTED.length
+    ?'<div class="exp-chips">'+EXPERT_SELECTED.map(id=>{
+      const p=lookup.get(id);return '<button type="button" class="exp-chip" data-remove="'+id+'" aria-label="'+esc(nm(p.koName))+' 선택 해제"><span class="cb">'+esc(p.koBrand)+'</span>'+esc(nm(p.koName))+'<svg class="cx" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7"/></svg></button>'
      }).join('')+'</div>'
-    :'<p class="exp-disclaimer">선택한 향수가 아직 없어요.</p>';
+    :'<p class="exp-pick-empty">아직 선택한 향수가 없어요.</p>');
    for(const b of picked.querySelectorAll('[data-remove]')) b.onclick=()=>{EXPERT_SELECTED=EXPERT_SELECTED.filter(id=>id!==Number(b.dataset.remove));paint()};
    const found=findExpertProducts(search.value);
-   info.textContent=search.value.trim()? '검색 결과 '+found.all+'종':'향수 이름이나 브랜드를 검색해 주세요.';
+   info.textContent=(search.value.trim()?'검색 결과 ':'전체 ')+found.all+'종'+(found.all>found.items.length?' 중 '+found.items.length+'종 표시':'');
    list.innerHTML=found.items.length?found.items.map(p=>{
      const on=EXPERT_SELECTED.includes(p.id),locked=EXPERT_SELECTED.length>=5&&!on;
      return '<button type="button" class="exp-item'+(on?' selected':'')+'" data-id="'+p.id+'"'+(locked?' disabled':'')+' aria-pressed="'+on+'">'
-       +'<span class="exp-item-text"><b>'+esc(p.koName)+'</b><small>'+esc(p.koBrand)+' · '+esc(p.name)+'</small></span>'
+       +'<span class="exp-item-text"><b>'+esc(nm(p.koName))+'</b><small>'+esc(p.koBrand)+' · '+esc(p.name)+'</small></span>'
        +'<span class="exp-item-mark">'+(on?'✓':'+')+'</span></button>'
    }).join(''):'<div class="exp-empty">검색 결과가 없어요. 다른 이름으로 검색해 주세요.</div>';
    for(const b of list.querySelectorAll('[data-id]'))b.onclick=()=>{
