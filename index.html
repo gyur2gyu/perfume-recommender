@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>나에게 맞는 향수 찾기</title>
+<title>ScentPick · 나에게 맞는 향수 찾기</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
@@ -48,6 +48,7 @@ h2{font-size:28px;line-height:1.4;margin-bottom:10px}
 .btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
 .intro{justify-content:center;padding-bottom:8vh}
 .intro p{color:var(--mut);margin:18px 0 40px}
+.intro h1{font-size:clamp(29px,7.7vw,33px);line-height:1.35}
 .stage{justify-content:center;align-items:flex-start;padding-bottom:10vh}
 .stage .msg{font-family:var(--serif);font-weight:300;font-size:24px;min-height:70px;transition:opacity .4s}
 .stage .notes{color:var(--mut);font-size:14px;margin-top:8px;min-height:22px}
@@ -107,10 +108,104 @@ h2{font-size:27px;line-height:1.35}
 .opt:disabled{opacity:.35;cursor:not-allowed}
 .pname{font-size:26px;line-height:1.35}
 .row .p{text-align:right}
+
+/* Experienced-user mode, visually aligned with the existing Claude UI. */
+.entry-options{display:grid;gap:12px;width:100%;margin-top:12px}
+.entry-card{width:100%;text-align:left;border:1px solid var(--line);background:var(--sf);color:var(--ink);border-radius:16px;padding:19px;display:flex;flex-direction:column;gap:5px;cursor:pointer;font:inherit}
+.entry-card:hover,.entry-card:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.entry-card b{font-size:17px}.entry-card span:not(.entry-symbol){font-size:13px;color:var(--mut)}
+.entry-symbol{font-size:26px;line-height:1.2;color:var(--acc)}
+.exp-label{font-size:13px;font-weight:700;display:block;margin:8px 0 8px}
+.exp-search{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:var(--sf);color:var(--ink);font:inherit;font-size:14px;outline-offset:2px}
+.exp-search:focus-visible{outline:2px solid var(--acc)}
+.exp-picked{margin:16px 0 9px;min-height:35px}.exp-chips{display:flex;flex-wrap:wrap;gap:6px}
+.exp-chip{border:1px solid var(--acc);border-radius:40px;background:var(--tint);color:var(--ink);padding:7px 10px;font:inherit;font-size:12px;cursor:pointer}
+.exp-chip b{font-size:17px;margin-left:3px}
+.exp-search-info{font-size:12px;color:var(--mut);margin:7px 0}
+.exp-search-list{display:flex;flex-direction:column;gap:6px;overflow-y:auto;max-height:310px;min-height:120px;padding:2px 2px 5px}
+.exp-item{border:1px solid var(--line);border-radius:12px;background:var(--sf);color:var(--ink);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;text-align:left;cursor:pointer;font:inherit}
+.exp-item.selected{border-color:var(--acc);background:var(--tint)}.exp-item:disabled{opacity:.45;cursor:not-allowed}
+.exp-item:focus-visible{outline:2px solid var(--acc)}
+.exp-item-text{min-width:0;display:block}.exp-item-text b{display:block;font-size:13px}.exp-item-text small{display:block;color:var(--mut);font-size:11px;margin-top:3px;overflow-wrap:anywhere}
+.exp-item-mark{font-weight:700;font-size:20px;color:var(--acc);min-width:20px;text-align:center}
+.exp-empty{color:var(--mut);font-size:13px;padding:20px 8px;text-align:center}
+.exp-disclaimer{color:var(--mut);font-size:11px;line-height:1.6;margin:9px 0}
+.exp-summary{border:1px solid var(--line);background:var(--sf);border-radius:16px;padding:16px;margin:16px 0 20px}
+.exp-taste{display:flex;flex-wrap:wrap;gap:7px}.exp-taste-tag{padding:6px 10px;border-radius:25px;background:var(--tint);color:var(--ink);font-size:12px}
+.exp-taste-tag b{margin-left:5px;color:var(--acc);font-variant-numeric:tabular-nums}
+.exp-section-title{font-size:18px;margin:10px 0 12px}
+.exp-result{background:var(--sf);border:1px solid var(--line);border-radius:14px;padding:17px;margin-bottom:12px}
+.exp-first{border-color:var(--acc)}.exp-result-top{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--acc);font-size:12px;font-weight:700}
+.exp-result-top b{font-size:20px;font-variant-numeric:tabular-nums}.exp-result-name{font-size:18px;line-height:1.4;font-weight:800;margin:7px 0 4px}
+.exp-matched{margin-top:10px;font-size:13px}.exp-result .meta{margin-top:8px}
+.exp-reset{margin-top:9px}
+@media(max-width:440px){.app{padding-left:16px;padding-right:16px}}
+
+/* 검수(분석) 연출 - 두 경로 공통 */
+.stage .msg{min-height:0;margin-bottom:22px}
+.chk{list-style:none;margin:0;padding:0;width:100%;display:flex;flex-direction:column;gap:16px}
+.chk li{display:flex;gap:12px;align-items:flex-start;opacity:.35;transition:opacity .4s}
+.chk li.act,.chk li.done{opacity:1}
+.ck{flex:none;width:22px;height:22px;margin-top:2px;border-radius:50%;border:2px solid var(--line);position:relative;transition:background .3s,border-color .3s}
+.chk li.act .ck{border-top-color:var(--acc);animation:spin .8s linear infinite}
+.chk li.done .ck{background:var(--acc);border-color:var(--acc)}
+.chk li.done .ck::after{content:"";position:absolute;left:6px;top:2px;width:5px;height:10px;border:solid var(--onacc);border-width:0 2px 2px 0;transform:rotate(45deg);animation:pop .3s ease-out both}
+.chk b{display:block;font-size:15px;font-weight:700;line-height:1.5}
+.chk small{display:block;font-size:13px;color:var(--mut);line-height:1.5;overflow-wrap:anywhere}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pop{from{opacity:0;transform:rotate(45deg) scale(.4)}to{opacity:1;transform:rotate(45deg) scale(1)}}
+@media (prefers-reduced-motion:reduce){.chk li.act .ck{animation:none;border-color:var(--acc)}}
+
+/* 브랜드 / 노트 구분 + 타입 스케일 정리 */
+h1,h2,h3{word-break:keep-all}
+.bname{display:block;font-size:13px;font-weight:700;color:var(--mut);line-height:1.4;letter-spacing:-.01em}
+.top1 .pname{font-size:26px;margin:2px 0 3px}
+.brand{font-size:13px;color:var(--mut)}
+.nrow{margin-top:16px}
+.nl{display:block;font-size:12px;font-weight:700;color:var(--mut);margin-bottom:7px}
+.nrow .chips{margin:0;gap:5px}
+.nrow .chips em{font-size:13px;padding:3px 11px}
+.more .row{align-items:flex-start;padding:18px 0}
+.row .rl{min-width:0}
+.row .rl b{font-size:17px;line-height:1.4;margin:1px 0 9px;font-weight:800;letter-spacing:-.02em}
+.top1 .nrow{margin-bottom:18px}
+.why,.sub,.meta,.note,.exp-matched{word-break:keep-all}
+.row .p{font-size:13px;line-height:1.6;padding-top:2px}
+.row .p strong{display:block;color:var(--acc);font-size:15px;margin-top:2px}
+.exp-result-name{font-size:17px;margin:2px 0 3px}
+.exp-result .brand{margin-bottom:0}
+.exp-result .nrow{margin-top:12px}
+.exp-result-top{font-size:13px}.exp-result-top b{font-size:18px}
+.exp-matched{font-size:13px;color:var(--mut)}
+.pk-list{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 20px}
+.pk{font-size:13px;line-height:1.4;border:1px solid var(--line);background:var(--sf);border-radius:99px;padding:5px 12px}
+.pk span{color:var(--mut);margin-right:5px}
+.hb{display:flex;flex-direction:column;gap:15px;margin-top:16px}
+.hb-row{display:grid;grid-template-columns:112px 1fr 40px;align-items:center;gap:10px}
+.hb-label{display:flex;align-items:center;gap:6px;min-width:0;font-size:13px;font-weight:700;line-height:1.3}
+.hb-label .be{flex:none;font-size:15px}
+.hb-track{height:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.hb-track i{display:block;height:100%;width:0;border-radius:99px;background:var(--acc);transition:width .9s cubic-bezier(.3,.7,.2,1)}
+.hb-pct{font-size:13px;font-weight:700;color:var(--mut);text-align:right;font-variant-numeric:tabular-nums}
+.hb-row:first-child .hb-pct{color:var(--ink)}
+.exp-summary .exp-label{margin-top:0;font-size:15px}
+.opt b{font-size:16px}.opt span{font-size:13px}
+.exp-search{font-size:16px}
+.exp-item-text b{font-size:15px}.exp-item-text small{font-size:12px}
+.exp-chip{font-size:13px}
+.exp-disclaimer,.exp-search-info,.note{font-size:12px}
+.meta{font-size:13px}
+.exp-section-title,.more h3{font-size:18px}
+
+/* 로고: ScentPick + 체크 */
+.bt{gap:8px;font-size:18px;font-weight:800;letter-spacing:-.03em}
+.bi{width:22px;height:22px}
+.bi circle{fill:var(--acc)}
+.bi path{stroke:var(--onacc)}
 </style>
 </head>
 <body>
-<div class="app"><div class="bt"><svg class="bi" viewBox="0 0 16 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5.5" y="1" width="5" height="3.2" rx=".8"/><path d="M7 4.2v2.3M9 4.2v2.3"/><rect x="2" y="6.5" width="12" height="12.5" rx="3"/><path d="M5.5 12h5"/></svg><span>향수 취향 코치</span></div>
+<div class="app"><div class="bt"><svg class="bi" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="11"/><path d="M6.2 11.4l3.3 3.3 6.3-6.6" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>ScentPick</span></div>
   <div class="top"><button class="back" id="back">이전</button><div class="bar"><i id="fill"></i></div><div class="cnt" id="cnt"></div></div>
   <main id="main"></main>
 </div>
@@ -119,6 +214,85 @@ const DATABASE={"perfumes":[{"id":1,"brand":"Clean","name":"Warm Cotton EDP","ko
 const OPT={"longevity":[{"value":"any","label":"상관없음"},{"value":"약함","label":"약함"},{"value":"보통","label":"보통"},{"value":"다소 강함","label":"다소 강함"},{"value":"강함","label":"강함"}],"season":[{"value":"any","label":"상관없음"},{"value":"봄","label":"봄"},{"value":"여름","label":"여름"},{"value":"가을","label":"가을"},{"value":"겨울","label":"겨울"}],"occasion":[{"value":"any","label":"상관없음"},{"value":"일상","label":"일상"},{"value":"학교·직장","label":"학교·직장"},{"value":"데이트·약속","label":"데이트·약속"},{"value":"특별한 날","label":"특별한 날"}],"budget":[{"value":"150000","label":"15만 원 이하"},{"value":"250000","label":"25만 원 이하"},{"value":"350000","label":"35만 원 이하"},{"value":"450000","label":"45만 원 이하"},{"value":"any","label":"상관없음"}]};
 const CATS=["클린·비누","시트러스","플로럴","프루티","그린·허브","우디","머스크·파우더리","구르망","앰버·스파이시","아쿠아틱·마린","스모키·레더"];
 const DESC={"클린·비누":"씻고 나온 듯 깨끗한 향","시트러스":"상큼한 레몬, 오렌지 향","플로럴":"장미·자스민의 꽃향","프루티":"달콤한 베리, 복숭아 향","그린·허브":"푸릇한 풀잎과 허브 향","우디":"연필, 원목 가구의 나무 향","머스크·파우더리":"보송하고 포근한 향","구르망":"바닐라·캐러멜의 달콤함","앰버·스파이시":"따뜻하고 이국적인 향신료","아쿠아틱·마린":"서늘하고 청량한 바닷바람","스모키·레더":"가죽과 연기를 닮은 향"};
+const EXPERT_ACCORD_ROWS=[{"id":1,"accords":[{"rank":1,"accord":"클린·비누","weight":10},{"rank":2,"accord":"시트러스","weight":8},{"rank":3,"accord":"프레시","weight":6}]},{"id":2,"accords":[{"rank":1,"accord":"클린·비누","weight":10},{"rank":2,"accord":"머스크","weight":8},{"rank":3,"accord":"알데하이딕","weight":6},{"rank":4,"accord":"파우더리","weight":4}]},{"id":3,"accords":[{"rank":1,"accord":"시트러스","weight":10},{"rank":2,"accord":"아로마틱","weight":8},{"rank":3,"accord":"허벌","weight":6},{"rank":4,"accord":"플로럴","weight":4}]},{"id":4,"accords":[{"rank":1,"accord":"시트러스","weight":10},{"rank":2,"accord":"그린","weight":8},{"rank":3,"accord":"허벌","weight":6},{"rank":4,"accord":"우디","weight":4},{"rank":5,"accord":"프레시","weight":2}]},{"id":5,"accords":[{"rank":1,"accord":"마린·솔티","weight":10},{"rank":2,"accord":"아쿠아틱","weight":8},{"rank":3,"accord":"미네랄","weight":6},{"rank":4,"accord":"앰버","weight":4}]},{"id":6,"accords":[{"rank":1,"accord":"아쿠아틱","weight":10},{"rank":2,"accord":"시트러스","weight":8},{"rank":3,"accord":"마린·솔티","weight":6},{"rank":4,"accord":"플로럴","weight":4},{"rank":5,"accord":"우디","weight":2}]},{"id":7,"accords":[{"rank":1,"accord":"머스크","weight":10},{"rank":2,"accord":"클린·비누","weight":8},{"rank":3,"accord":"화이트 플로럴","weight":6},{"rank":4,"accord":"파우더리","weight":4}]},{"id":8,"accords":[{"rank":1,"accord":"머스크","weight":10},{"rank":2,"accord":"플로럴","weight":8},{"rank":3,"accord":"앰버","weight":6},{"rank":4,"accord":"화이트 플로럴","weight":4}]},{"id":9,"accords":[{"rank":1,"accord":"시트러스","weight":10},{"rank":2,"accord":"그린","weight":8},{"rank":3,"accord":"티","weight":6},{"rank":4,"accord":"머스크","weight":4},{"rank":5,"accord":"프레시","weight":2}]},{"id":10,"accords":[{"rank":1,"accord":"머스크","weight":10},{"rank":2,"accord":"파우더리","weight":8},{"rank":3,"accord":"아로마틱","weight":6},{"rank":4,"accord":"우디","weight":4}]},{"id":11,"accords":[{"rank":1,"accord":"파우더리","weight":10},{"rank":2,"accord":"머스크","weight":8},{"rank":3,"accord":"플로럴","weight":6}]},{"id":12,"accords":[{"rank":1,"accord":"마린·솔티","weight":10},{"rank":2,"accord":"아쿠아틱","weight":8},{"rank":3,"accord":"우디","weight":6},{"rank":4,"accord":"허벌","weight":4}]},{"id":13,"accords":[{"rank":1,"accord":"플로럴","weight":10},{"rank":2,"accord":"클린·비누","weight":8},{"rank":3,"accord":"프레시","weight":6}]},{"id":14,"accords":[{"rank":1,"accord":"모시·어시","weight":10},{"rank":2,"accord":"우디","weight":8},{"rank":3,"accord":"프루티","weight":6},{"rank":4,"accord":"플로럴","weight":4},{"rank":5,"accord":"그린","weight":2}]},{"id":15,"accords":[{"rank":1,"accord":"플로럴","weight":10},{"rank":2,"accord":"프루티","weight":8},{"rank":3,"accord":"그린","weight":6},{"rank":4,"accord":"프레시","weight":4}]},{"id":16,"accords":[{"rank":1,"accord":"프루티","weight":10},{"rank":2,"accord":"플로럴","weight":8},{"rank":3,"accord":"바닐릭","weight":6},{"rank":4,"accord":"스위트","weight":4}]},{"id":17,"accords":[{"rank":1,"accord":"우디","weight":10},{"rank":2,"accord":"시트러스","weight":8},{"rank":3,"accord":"모시·어시","weight":6},{"rank":4,"accord":"레더","weight":4}]},{"id":18,"accords":[{"rank":1,"accord":"아로마틱","weight":10},{"rank":2,"accord":"우디","weight":8},{"rank":3,"accord":"모시·어시","weight":6},{"rank":4,"accord":"시트러스","weight":4},{"rank":5,"accord":"바닐릭","weight":2}]},{"id":19,"accords":[{"rank":1,"accord":"티","weight":10},{"rank":2,"accord":"그린","weight":8},{"rank":3,"accord":"시트러스","weight":6},{"rank":4,"accord":"허벌","weight":4},{"rank":5,"accord":"프레시","weight":2}]},{"id":20,"accords":[{"rank":1,"accord":"플로럴","weight":10},{"rank":2,"accord":"화이트 플로럴","weight":8},{"rank":3,"accord":"파우더리","weight":6},{"rank":4,"accord":"머스크","weight":4}]},{"id":21,"accords":[{"rank":1,"accord":"프루티","weight":10},{"rank":2,"accord":"플로럴","weight":8},{"rank":3,"accord":"클린·비누","weight":6},{"rank":4,"accord":"프레시","weight":4}]},{"id":22,"accords":[{"rank":1,"accord":"마린·솔티","weight":10},{"rank":2,"accord":"미네랄","weight":8},{"rank":3,"accord":"아로마틱","weight":6},{"rank":4,"accord":"그린","weight":4},{"rank":5,"accord":"아쿠아틱","weight":2}]},{"id":23,"accords":[{"rank":1,"accord":"프루티","weight":10},{"rank":2,"accord":"그린","weight":8},{"rank":3,"accord":"허벌","weight":6},{"rank":4,"accord":"프레시","weight":4}]},{"id":24,"accords":[{"rank":1,"accord":"시트러스","weight":10},{"rank":2,"accord":"허벌","weight":8},{"rank":3,"accord":"아로마틱","weight":6},{"rank":4,"accord":"프레시 스파이시","weight":4},{"rank":5,"accord":"그린","weight":2}]},{"id":25,"accords":[{"rank":1,"accord":"파우더리","weight":10},{"rank":2,"accord":"머스크","weight":8},{"rank":3,"accord":"플로럴","weight":6}]},{"id":26,"accords":[{"rank":1,"accord":"화이트 플로럴","weight":10},{"rank":2,"accord":"플로럴","weight":8},{"rank":3,"accord":"머스크","weight":6},{"rank":4,"accord":"파우더리","weight":4}]},{"id":27,"accords":[{"rank":1,"accord":"그린","weight":10},{"rank":2,"accord":"프루티","weight":8},{"rank":3,"accord":"우디","weight":6},{"rank":4,"accord":"모시·어시","weight":4}]},{"id":28,"accords":[{"rank":1,"accord":"파우더리","weight":10},{"rank":2,"accord":"머스크","weight":8},{"rank":3,"accord":"우디","weight":6},{"rank":4,"accord":"아로마틱","weight":4}]},{"id":29,"accords":[{"rank":1,"accord":"클린·비누","weight":10},{"rank":2,"accord":"알데하이딕","weight":8},{"rank":3,"accord":"화이트 플로럴","weight":6},{"rank":4,"accord":"프레시","weight":4}]},{"id":30,"accords":[{"rank":1,"accord":"우디","weight":10},{"rank":2,"accord":"시트러스","weight":8},{"rank":3,"accord":"크리미","weight":6},{"rank":4,"accord":"프루티","weight":4}]},{"id":31,"accords":[{"rank":1,"accord":"우디","weight":10},{"rank":2,"accord":"파우더리","weight":8},{"rank":3,"accord":"머스크","weight":6},{"rank":4,"accord":"플로럴","weight":4},{"rank":5,"accord":"크리미","weight":2}]},{"id":32,"accords":[{"rank":1,"accord":"우디","weight":10},{"rank":2,"accord":"아로마틱","weight":8},{"rank":3,"accord":"그린","weight":6},{"rank":4,"accord":"시트러스","weight":4},{"rank":5,"accord":"바닐릭","weight":2}]},{"id":33,"accords":[{"rank":1,"accord":"머스크","weight":10},{"rank":2,"accord":"우디","weight":8},{"rank":3,"accord":"메탈릭","weight":6},{"rank":4,"accord":"미네랄","weight":4},{"rank":5,"accord":"프레시","weight":2}]},{"id":34,"accords":[{"rank":1,"accord":"우디","weight":10},{"rank":2,"accord":"레더","weight":8},{"rank":3,"accord":"웜 스파이시","weight":6},{"rank":4,"accord":"스모키","weight":4},{"rank":5,"accord":"파우더리","weight":2}]},{"id":35,"accords":[{"rank":1,"accord":"우디","weight":10},{"rank":2,"accord":"티","weight":8},{"rank":3,"accord":"그린","weight":6},{"rank":4,"accord":"프루티","weight":4},{"rank":5,"accord":"아로마틱","weight":2}]},{"id":36,"accords":[{"rank":1,"accord":"시트러스","weight":10},{"rank":2,"accord":"우디","weight":8},{"rank":3,"accord":"머스크","weight":6},{"rank":4,"accord":"프레시","weight":4}]},{"id":37,"accords":[{"rank":1,"accord":"우디","weight":10},{"rank":2,"accord":"앰버","weight":8},{"rank":3,"accord":"웜 스파이시","weight":6},{"rank":4,"accord":"메탈릭","weight":4},{"rank":5,"accord":"스위트","weight":2}]},{"id":38,"accords":[{"rank":1,"accord":"아로마틱","weight":10},{"rank":2,"accord":"그린","weight":8},{"rank":3,"accord":"웜 스파이시","weight":6},{"rank":4,"accord":"우디","weight":4},{"rank":5,"accord":"머스크","weight":2}]},{"id":39,"accords":[{"rank":1,"accord":"시트러스","weight":10},{"rank":2,"accord":"클린·비누","weight":8},{"rank":3,"accord":"머스크","weight":6},{"rank":4,"accord":"화이트 플로럴","weight":4},{"rank":5,"accord":"프레시","weight":2}]},{"id":40,"accords":[{"rank":1,"accord":"앰버","weight":10},{"rank":2,"accord":"플로럴","weight":8},{"rank":3,"accord":"오우드","weight":6},{"rank":4,"accord":"바닐릭","weight":4},{"rank":5,"accord":"스위트","weight":2}]},{"id":41,"accords":[{"rank":1,"accord":"우디","weight":10},{"rank":2,"accord":"웜 스파이시","weight":8},{"rank":3,"accord":"오우드","weight":6},{"rank":4,"accord":"앰버","weight":4},{"rank":5,"accord":"아로마틱","weight":2}]},{"id":42,"accords":[{"rank":1,"accord":"시트러스","weight":10},{"rank":2,"accord":"화이트 플로럴","weight":8},{"rank":3,"accord":"아로마틱","weight":6},{"rank":4,"accord":"프레시","weight":4},{"rank":5,"accord":"허벌","weight":2}]},{"id":43,"accords":[{"rank":1,"accord":"바닐릭","weight":10},{"rank":2,"accord":"구르망","weight":8},{"rank":3,"accord":"토바코","weight":6},{"rank":4,"accord":"웜 스파이시","weight":4},{"rank":5,"accord":"스위트","weight":2}]},{"id":44,"accords":[{"rank":1,"accord":"프루티","weight":10},{"rank":2,"accord":"구르망","weight":8},{"rank":3,"accord":"너티","weight":6},{"rank":4,"accord":"바닐릭","weight":4},{"rank":5,"accord":"스위트","weight":2}]},{"id":45,"accords":[{"rank":1,"accord":"프루티","weight":10},{"rank":2,"accord":"시트러스","weight":8},{"rank":3,"accord":"스모키","weight":6},{"rank":4,"accord":"우디","weight":4}]},{"id":46,"accords":[{"rank":1,"accord":"시트러스","weight":10},{"rank":2,"accord":"티","weight":8},{"rank":3,"accord":"그린","weight":6},{"rank":4,"accord":"머스크","weight":4},{"rank":5,"accord":"프레시","weight":2}]},{"id":47,"accords":[{"rank":1,"accord":"그린","weight":10},{"rank":2,"accord":"아로마틱","weight":8},{"rank":3,"accord":"허벌","weight":6},{"rank":4,"accord":"모시·어시","weight":4},{"rank":5,"accord":"우디","weight":2}]},{"id":48,"accords":[{"rank":1,"accord":"시트러스","weight":10},{"rank":2,"accord":"트로피컬","weight":8},{"rank":3,"accord":"프루티","weight":6},{"rank":4,"accord":"부지","weight":4},{"rank":5,"accord":"스위트","weight":2}]},{"id":49,"accords":[{"rank":1,"accord":"플로럴","weight":10},{"rank":2,"accord":"프루티","weight":8},{"rank":3,"accord":"시트러스","weight":6},{"rank":4,"accord":"머스크","weight":4},{"rank":5,"accord":"프레시","weight":2}]},{"id":50,"accords":[{"rank":1,"accord":"시트러스","weight":10},{"rank":2,"accord":"플로럴","weight":8},{"rank":3,"accord":"우디","weight":6},{"rank":4,"accord":"앰버","weight":4},{"rank":5,"accord":"모시·어시","weight":2}]},{"id":51,"accords":[{"rank":1,"accord":"우디","weight":10},{"rank":2,"accord":"시트러스","weight":8},{"rank":3,"accord":"인센스","weight":6},{"rank":4,"accord":"스모키","weight":4}]},{"id":52,"accords":[{"rank":1,"accord":"플로럴","weight":10},{"rank":2,"accord":"알데하이딕","weight":8},{"rank":3,"accord":"파우더리","weight":6},{"rank":4,"accord":"클린·비누","weight":4}]},{"id":53,"accords":[{"rank":1,"accord":"머스크","weight":10},{"rank":2,"accord":"파우더리","weight":8},{"rank":3,"accord":"플로럴","weight":6},{"rank":4,"accord":"화이트 플로럴","weight":4}]},{"id":54,"accords":[{"rank":1,"accord":"시트러스","weight":10},{"rank":2,"accord":"프레시 스파이시","weight":8},{"rank":3,"accord":"앰버","weight":6},{"rank":4,"accord":"우디","weight":4}]},{"id":55,"accords":[{"rank":1,"accord":"플로럴","weight":10},{"rank":2,"accord":"머스크","weight":8},{"rank":3,"accord":"파우더리","weight":6},{"rank":4,"accord":"프레시","weight":4}]},{"id":56,"accords":[{"rank":1,"accord":"화이트 플로럴","weight":10},{"rank":2,"accord":"플로럴","weight":8},{"rank":3,"accord":"프루티","weight":6},{"rank":4,"accord":"스위트","weight":4}]},{"id":57,"accords":[{"rank":1,"accord":"시트러스","weight":10},{"rank":2,"accord":"클린·비누","weight":8},{"rank":3,"accord":"머스크","weight":6},{"rank":4,"accord":"프레시","weight":4}]},{"id":58,"accords":[{"rank":1,"accord":"모시·어시","weight":10},{"rank":2,"accord":"우디","weight":8},{"rank":3,"accord":"플로럴","weight":6},{"rank":4,"accord":"그린","weight":4}]},{"id":59,"accords":[{"rank":1,"accord":"우디","weight":10},{"rank":2,"accord":"시트러스","weight":8},{"rank":3,"accord":"모시·어시","weight":6},{"rank":4,"accord":"미네랄","weight":4},{"rank":5,"accord":"프레시","weight":2}]},{"id":60,"accords":[{"rank":1,"accord":"그린","weight":10},{"rank":2,"accord":"프루티","weight":8},{"rank":3,"accord":"아쿠아틱","weight":6},{"rank":4,"accord":"플로럴","weight":4},{"rank":5,"accord":"우디","weight":2}]},{"id":61,"accords":[{"rank":1,"accord":"화이트 플로럴","weight":10},{"rank":2,"accord":"웜 스파이시","weight":8},{"rank":3,"accord":"플로럴","weight":6},{"rank":4,"accord":"우디","weight":4}]},{"id":62,"accords":[{"rank":1,"accord":"그린","weight":10},{"rank":2,"accord":"아로마틱","weight":8},{"rank":3,"accord":"허벌","weight":6},{"rank":4,"accord":"플로럴","weight":4},{"rank":5,"accord":"우디","weight":2}]},{"id":63,"accords":[{"rank":1,"accord":"플로럴","weight":10},{"rank":2,"accord":"앰버","weight":8},{"rank":3,"accord":"웜 스파이시","weight":6},{"rank":4,"accord":"인센스","weight":4},{"rank":5,"accord":"프루티","weight":2}]},{"id":64,"accords":[{"rank":1,"accord":"웜 스파이시","weight":10},{"rank":2,"accord":"앰버","weight":8},{"rank":3,"accord":"바닐릭","weight":6},{"rank":4,"accord":"머스크","weight":4},{"rank":5,"accord":"스위트","weight":2}]},{"id":65,"accords":[{"rank":1,"accord":"파우더리","weight":10},{"rank":2,"accord":"머스크","weight":8},{"rank":3,"accord":"플로럴","weight":6},{"rank":4,"accord":"바닐릭","weight":4}]},{"id":66,"accords":[{"rank":1,"accord":"그린","weight":10},{"rank":2,"accord":"우디","weight":8},{"rank":3,"accord":"허벌","weight":6},{"rank":4,"accord":"모시·어시","weight":4}]},{"id":67,"accords":[{"rank":1,"accord":"클린·비누","weight":10},{"rank":2,"accord":"알데하이딕","weight":8},{"rank":3,"accord":"머스크","weight":6},{"rank":4,"accord":"파우더리","weight":4},{"rank":5,"accord":"프레시","weight":2}]},{"id":68,"accords":[{"rank":1,"accord":"스모키","weight":10},{"rank":2,"accord":"구르망","weight":8},{"rank":3,"accord":"우디","weight":6},{"rank":4,"accord":"스위트","weight":4},{"rank":5,"accord":"바닐릭","weight":2}]},{"id":69,"accords":[{"rank":1,"accord":"토바코","weight":10},{"rank":2,"accord":"부지","weight":8},{"rank":3,"accord":"앰버","weight":6},{"rank":4,"accord":"바닐릭","weight":4},{"rank":5,"accord":"스모키","weight":2}]},{"id":70,"accords":[{"rank":1,"accord":"아쿠아틱","weight":10},{"rank":2,"accord":"트로피컬","weight":8},{"rank":3,"accord":"크리미","weight":6},{"rank":4,"accord":"시트러스","weight":4},{"rank":5,"accord":"플로럴","weight":2}]},{"id":71,"accords":[{"rank":1,"accord":"플로럴","weight":10},{"rank":2,"accord":"아로마틱","weight":8},{"rank":3,"accord":"바닐릭","weight":6},{"rank":4,"accord":"앰버","weight":4},{"rank":5,"accord":"화이트 플로럴","weight":2}]},{"id":72,"accords":[{"rank":1,"accord":"아로마틱","weight":10},{"rank":2,"accord":"그린","weight":8},{"rank":3,"accord":"프루티","weight":6},{"rank":4,"accord":"우디","weight":4}]},{"id":73,"accords":[{"rank":1,"accord":"우디","weight":10},{"rank":2,"accord":"웜 스파이시","weight":8},{"rank":3,"accord":"앰버","weight":6},{"rank":4,"accord":"바닐릭","weight":4}]},{"id":74,"accords":[{"rank":1,"accord":"구르망","weight":10},{"rank":2,"accord":"커피","weight":8},{"rank":3,"accord":"바닐릭","weight":6},{"rank":4,"accord":"화이트 플로럴","weight":4},{"rank":5,"accord":"프루티","weight":2}]},{"id":75,"accords":[{"rank":1,"accord":"시트러스","weight":10},{"rank":2,"accord":"허벌","weight":8},{"rank":3,"accord":"그린","weight":6},{"rank":4,"accord":"아로마틱","weight":4},{"rank":5,"accord":"프레시","weight":2}]},{"id":76,"accords":[{"rank":1,"accord":"바닐릭","weight":10},{"rank":2,"accord":"구르망","weight":8},{"rank":3,"accord":"아로마틱","weight":6},{"rank":4,"accord":"파우더리","weight":4},{"rank":5,"accord":"플로럴","weight":2}]},{"id":77,"accords":[{"rank":1,"accord":"앰버","weight":10},{"rank":2,"accord":"바닐릭","weight":8},{"rank":3,"accord":"발사믹","weight":6},{"rank":4,"accord":"인센스","weight":4},{"rank":5,"accord":"시트러스","weight":2}]},{"id":78,"accords":[{"rank":1,"accord":"구르망","weight":10},{"rank":2,"accord":"너티","weight":8},{"rank":3,"accord":"바닐릭","weight":6},{"rank":4,"accord":"레더","weight":4},{"rank":5,"accord":"우디","weight":2}]},{"id":79,"accords":[{"rank":1,"accord":"구르망","weight":10},{"rank":2,"accord":"웜 스파이시","weight":8},{"rank":3,"accord":"부지","weight":6},{"rank":4,"accord":"바닐릭","weight":4},{"rank":5,"accord":"스위트","weight":2}]},{"id":80,"accords":[{"rank":1,"accord":"구르망","weight":10},{"rank":2,"accord":"스위트","weight":8},{"rank":3,"accord":"바닐릭","weight":6},{"rank":4,"accord":"화이트 플로럴","weight":4}]},{"id":81,"accords":[{"rank":1,"accord":"화이트 플로럴","weight":10},{"rank":2,"accord":"프루티","weight":8},{"rank":3,"accord":"플로럴","weight":6},{"rank":4,"accord":"스위트","weight":4}]},{"id":82,"accords":[{"rank":1,"accord":"구르망","weight":10},{"rank":2,"accord":"커피","weight":8},{"rank":3,"accord":"부지","weight":6},{"rank":4,"accord":"스위트","weight":4},{"rank":5,"accord":"우디","weight":2}]},{"id":83,"accords":[{"rank":1,"accord":"시트러스","weight":10},{"rank":2,"accord":"아로마틱","weight":8},{"rank":3,"accord":"허벌","weight":6},{"rank":4,"accord":"화이트 플로럴","weight":4},{"rank":5,"accord":"프레시","weight":2}]},{"id":84,"accords":[{"rank":1,"accord":"프루티","weight":10},{"rank":2,"accord":"시트러스","weight":8},{"rank":3,"accord":"그린","weight":6},{"rank":4,"accord":"우디","weight":4},{"rank":5,"accord":"프레시","weight":2}]},{"id":85,"accords":[{"rank":1,"accord":"시트러스","weight":10},{"rank":2,"accord":"프루티","weight":8},{"rank":3,"accord":"스위트","weight":6},{"rank":4,"accord":"구르망","weight":4}]},{"id":86,"accords":[{"rank":1,"accord":"허벌","weight":10},{"rank":2,"accord":"그린","weight":8},{"rank":3,"accord":"시트러스","weight":6},{"rank":4,"accord":"아로마틱","weight":4},{"rank":5,"accord":"마린·솔티","weight":2}]},{"id":87,"accords":[{"rank":1,"accord":"플로럴","weight":10},{"rank":2,"accord":"머스크","weight":8},{"rank":3,"accord":"우디","weight":6}]},{"id":88,"accords":[{"rank":1,"accord":"우디","weight":10},{"rank":2,"accord":"앰버","weight":8},{"rank":3,"accord":"부지","weight":6},{"rank":4,"accord":"바닐릭","weight":4},{"rank":5,"accord":"웜 스파이시","weight":2}]},{"id":89,"accords":[{"rank":1,"accord":"시트러스","weight":10},{"rank":2,"accord":"플로럴","weight":8},{"rank":3,"accord":"프레시","weight":6}]},{"id":90,"accords":[{"rank":1,"accord":"아로마틱","weight":10},{"rank":2,"accord":"허벌","weight":8},{"rank":3,"accord":"프레시 스파이시","weight":6},{"rank":4,"accord":"시트러스","weight":4},{"rank":5,"accord":"우디","weight":2}]},{"id":91,"accords":[{"rank":1,"accord":"티","weight":10},{"rank":2,"accord":"시트러스","weight":8},{"rank":3,"accord":"그린","weight":6},{"rank":4,"accord":"프레시","weight":4}]},{"id":92,"accords":[{"rank":1,"accord":"모시·어시","weight":10},{"rank":2,"accord":"우디","weight":8},{"rank":3,"accord":"프루티","weight":6},{"rank":4,"accord":"시트러스","weight":4},{"rank":5,"accord":"그린","weight":2}]},{"id":93,"accords":[{"rank":1,"accord":"시트러스","weight":10},{"rank":2,"accord":"티","weight":8},{"rank":3,"accord":"화이트 플로럴","weight":6},{"rank":4,"accord":"머스크","weight":4},{"rank":5,"accord":"프레시","weight":2}]},{"id":94,"accords":[{"rank":1,"accord":"프루티","weight":10},{"rank":2,"accord":"시트러스","weight":8},{"rank":3,"accord":"그린","weight":6},{"rank":4,"accord":"허벌","weight":4},{"rank":5,"accord":"프레시","weight":2}]},{"id":95,"accords":[{"rank":1,"accord":"시트러스","weight":10},{"rank":2,"accord":"프루티","weight":8},{"rank":3,"accord":"프레시","weight":6}]},{"id":96,"accords":[{"rank":1,"accord":"프루티","weight":10},{"rank":2,"accord":"플로럴","weight":8},{"rank":3,"accord":"구르망","weight":6},{"rank":4,"accord":"모시·어시","weight":4}]},{"id":97,"accords":[{"rank":1,"accord":"허벌","weight":10},{"rank":2,"accord":"그린","weight":8},{"rank":3,"accord":"시트러스","weight":6},{"rank":4,"accord":"우디","weight":4},{"rank":5,"accord":"아로마틱","weight":2}]},{"id":98,"accords":[{"rank":1,"accord":"우디","weight":10},{"rank":2,"accord":"스모키","weight":8},{"rank":3,"accord":"인센스","weight":6},{"rank":4,"accord":"모시·어시","weight":4},{"rank":5,"accord":"그린","weight":2}]},{"id":99,"accords":[{"rank":1,"accord":"우디","weight":10},{"rank":2,"accord":"티","weight":8},{"rank":3,"accord":"프루티","weight":6},{"rank":4,"accord":"웜 스파이시","weight":4},{"rank":5,"accord":"크리미","weight":2}]},{"id":100,"accords":[{"rank":1,"accord":"플로럴","weight":10},{"rank":2,"accord":"프루티","weight":8},{"rank":3,"accord":"바닐릭","weight":6},{"rank":4,"accord":"스위트","weight":4},{"rank":5,"accord":"그린","weight":2}]}];
+/**
+ * Rule-based experienced-perfume recommender (100-item dataset).
+ * No online API or generative-AI calls. Input 'rows' has [{id,accords:[{rank,accord,weight}]}].
+ * Main accords remain separate. Only clean/soap <-> aldehydic receives a partial affinity.
+ * Score is a similarity indicator, not a predicted satisfaction probability.
+ */
+const ExpertRecommender = (() => {
+  "use strict";
+  const PARTIAL_AFFINITY = 0.45;
+  const ACCORD_A = "클린·비누";
+  const ACCORD_B = "알데하이딕";
+
+  function buildVector(accords) {
+    const v = Object.create(null);
+    for (const a of accords) {
+      if (!a || !a.accord || !Number.isFinite(a.weight) || a.weight <= 0) continue;
+      v[a.accord] = (v[a.accord] || 0) + a.weight;
+    }
+    return v;
+  }
+
+  function dot(v, w) {
+    let sum = 0;
+    for (const k of Object.keys(v)) sum += v[k] * (w[k] || 0);
+    // Related, not identical; symmetric matrix remains positive definite at |affinity| < 1.
+    sum += PARTIAL_AFFINITY * ((v[ACCORD_A] || 0) * (w[ACCORD_B] || 0)
+                                  + (v[ACCORD_B] || 0) * (w[ACCORD_A] || 0));
+    return sum;
+  }
+
+  function similarity(v, w) {
+    const a = dot(v,v), b = dot(w,w);
+    if (a <= 0 || b <= 0) return 0;
+    return Math.max(0,Math.min(1, dot(v,w) / Math.sqrt(a*b)));
+  }
+
+  function tasteProfile(rows, selectedIds) {
+    const lookup=new Map(rows.map(r=>[r.id,r]));
+    const selected=[...new Set(selectedIds.map(Number))].filter(id=>lookup.has(id));
+    if (!selected.length || selected.length>5) throw new Error("좋아하는 향수를 1~5종 선택해 주세요.");
+    const v=Object.create(null);
+    for (const id of selected) {
+      const row=lookup.get(id);
+      for (const a of row.accords) v[a.accord]=(v[a.accord]||0)+a.weight/selected.length;
+    }
+    const top=Object.entries(v).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'ko'))
+      .map(([name,score])=>({name,score:Math.round(score*100)/100}));
+    return {selectedIds:selected, vector:v, top};
+  }
+
+  function recommend(perfumes, rows, selectedIds, maxResults=5) {
+    const taste=tasteProfile(rows,selectedIds);
+    const rowById=new Map(rows.map(r=>[r.id,r]));
+    const selected=new Set(taste.selectedIds);
+    const ranked=[];
+    for (const p of perfumes) {
+      if (selected.has(p.id)) continue;
+      const row=rowById.get(p.id);
+      if (!row) continue;
+      const v=buildVector(row.accords);
+      const sim=similarity(taste.vector,v);
+      if (sim < 0.00001) continue;
+      const common=Object.keys(v).filter(k=>taste.vector[k]>0).sort((a,b)=>
+        taste.vector[b]*v[b]-taste.vector[a]*v[a]||a.localeCompare(b,'ko'));
+      const related=((taste.vector[ACCORD_A]||0)>0 && (v[ACCORD_B]||0)>0)
+                    || ((taste.vector[ACCORD_B]||0)>0 && (v[ACCORD_A]||0)>0);
+      ranked.push({p, profile:row, score:Math.round(sim*1000)/10,
+                   similarity:sim, common:common.slice(0,4), related});
+    }
+    ranked.sort((a,b)=>b.similarity-a.similarity||b.common.length-a.common.length||a.p.id-b.p.id);
+    return {taste, items:ranked.slice(0,maxResults), candidates:ranked.length,
+            total:perfumes.length, excluded:selected.size};
+  }
+
+  return {buildVector,dot,similarity,tasteProfile,recommend,PARTIAL_AFFINITY};
+})();
+if (typeof module !== "undefined" && module.exports) module.exports=ExpertRecommender;
+
 // ---- 추천 로직: 첨부된 perfume_recommendation_logic.txt 원본 그대로 ----
 const PERFUMES = DATABASE.perfumes;
 const LONGEVITY = ["약함","보통","다소 강함","강함"];
@@ -166,18 +340,29 @@ const Q=[
 {k:"occasion",t:"어떤 상황에서 쓰실 건가요?",o:OPT.occasion},
 {k:"budget",t:"예산은 어느 정도인가요?",s:"국내 정가 기준이에요.",o:OPT.budget}];
 const A={likes:[],avoid:[],longevity:null,season:null,occasion:null,budget:null};
-let i=-1,RES=null;const $=s=>document.getElementById(s),M=$("main");
+let i=-1,RES=null,EXPERT_SELECTED=[],EXPERT_RESULT=null,EXPERT_QUERY="";const $=s=>document.getElementById(s),M=$("main");
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const won=n=>n.toLocaleString("ko-KR")+"원";
+const nm=s=>String(s).replace(/오 드 (\S+)/g,"오드$1");
+const EMO={"클린·비누":"🧼","시트러스":"🍋","프레시":"💧","머스크":"🤍","알데하이딕":"✨","파우더리":"☁️","아로마틱":"🌿","허벌":"🌱","플로럴":"🌸","그린":"🍃","우디":"🪵","마린·솔티":"🌊","아쿠아틱":"💦","미네랄":"🪨","앰버":"🧡","화이트 플로럴":"🌼","티":"🍵","모시·어시":"🍄","프루티":"🍑","바닐릭":"🍦","스위트":"🍬","레더":"👜","프레시 스파이시":"🌶️","크리미":"🥛","메탈릭":"🔩","웜 스파이시":"🌶️","스모키":"💨","오우드":"🌳","구르망":"🍰","토바코":"🍂","너티":"🥜","트로피컬":"🍍","부지":"🥃","인센스":"🪔","커피":"☕","발사믹":"🍯"};
+const noteList=(label,arr)=>'<div class="nrow">'+(label?'<span class="nl">'+label+'</span>':'')+'<div class="chips">'+arr.map(x=>'<em>'+esc(String(x).trim())+'</em>').join("")+'</div></div>';
 const ans=()=>({first:A.likes[0],second:A.likes[1],avoid:A.avoid,longevity:A.longevity,season:A.season,occasion:A.occasion,budget:A.budget});
-function chrome(){$("back").style.visibility=(i>0&&i<6)?"visible":"hidden";
- $("fill").style.width=(i<0?0:Math.min(i+1,6)/6*100)+"%";$("cnt").textContent=(i>=0&&i<6)?(i+1)+"/6":""}
-function go(n){const cur=M.firstElementChild;const f=()=>{i=n;render()};
+function chrome(){
+ $("back").style.visibility=((i>=0&&i<6)||i===-2||i===-4)?"visible":"hidden";
+ $("fill").style.width=((i===-4||i===-3)?100:(i===-2?33:(i<0?0:Math.min(i+1,6)/6*100)))+"%";
+ $("cnt").textContent=(i>=0&&i<6)?(i+1)+"/6":"";
+}
+let busy=false,runId=0;
+function go(n){if(busy)return;busy=true;const cur=M.firstElementChild;const f=()=>{busy=false;i=n;render()};
  if(cur){cur.classList.add("out");setTimeout(f,260)}else f()}
 function render(){chrome();M.innerHTML="";const d=document.createElement("section");d.className="step";M.appendChild(d);
- if(i<0)return intro(d);if(i<6)return ask(d,Q[i]);if(i===6)return analyze(d);result(d)}
-function intro(d){d.classList.add("intro");d.innerHTML='<h1>나에게 맞는<br>향수 찾기</h1><p>여섯 가지 질문으로 취향을 정리하고,<br>어울리는 향수를 골라 드려요.</p><button class="btn" id="go">시작하기</button>';
- $("go").onclick=()=>go(0)}
+ if(i===-1)return intro(d);if(i===-2)return expertChoose(d);if(i===-3)return expertAnalyze(d);if(i===-4)return expertResult(d);if(i<6)return ask(d,Q[i]);if(i===6)return analyze(d);result(d)}
+function intro(d){d.classList.add("intro");
+ d.innerHTML='<h1>좋아하는 향수가<br>있나요?</h1><p>향수 경험에 맞춰 나에게 어울리는 향을 찾아드릴게요.</p>'
+  +'<div class="entry-options"><button class="entry-card" id="start-expert"><span class="entry-symbol">♡</span><b>네, 좋아하는 향수가 있어요</b><span>마음에 드는 향수로 취향을 분석하기</span></button>'
+  +'<button class="entry-card" id="start-novice"><span class="entry-symbol">✳</span><b>아직 잘 모르겠어요</b><span>6가지 질문으로 취향 찾아보기</span></button></div>';
+ $("start-expert").onclick=()=>go(-2);$("start-novice").onclick=()=>go(0);
+}
 function ask(d,q){let h='<div class="qn">질문 '+(i+1)+' / 6</div><h2>'+q.t+'</h2><p class="sub">'+(q.s||"")+'</p>';
  if(q.k==="likes"||q.k==="avoid"){
   h+='<div class="grid">'+CATS.map(c=>'<button class="opt" data-v="'+esc(c)+'"'+(q.k==="avoid"&&A.likes.includes(c)?' disabled':'')+'><b>'+esc(c)+'</b><span>'+DESC[c]+'</span><div class="rk"></div></button>').join("")+'</div><div class="foot"><button class="btn" id="nx"></button></div>';
@@ -196,30 +381,140 @@ function ask(d,q){let h='<div class="qn">질문 '+(i+1)+' / 6</div><h2>'+q.t+'</
  const bs=[...d.querySelectorAll(".opt")];
  bs.forEach(b=>{if(A[q.k]===b.dataset.v)b.classList.add("on");
   b.onclick=()=>{A[q.k]=b.dataset.v;bs.forEach(c=>c.classList.toggle("on",c===b));setTimeout(()=>go(i+1),320)}})}
-function analyze(d){chrome();$("fill").style.width="100%";d.classList.add("stage");
+function runAnalysis(d,steps,onDone){
+ const at=i,my=++runId,n=steps.length;d.classList.add("stage");
+ d.innerHTML='<div class="msg">취향을 분석하고 있어요</div>'
+  +'<ul class="chk" aria-live="polite">'+steps.map(x=>'<li><i class="ck"></i><div><b>'+esc(x.m)+'</b><small>'+esc(x.n)+'</small></div></li>').join("")+'</ul>'
+  +'<div class="thin"><i id="t"></i></div>';
+ const lis=[...d.querySelectorAll(".chk li")],t=$("t");let k=0;
+ const alive=()=>my===runId&&i===at;
+ const tick=()=>{if(!alive())return;
+  if(k>0)lis[k-1].classList.replace("act","done");
+  if(k>=n){t.style.width="100%";return setTimeout(()=>{if(alive())onDone()},650)}
+  lis[k].classList.add("act");t.style.width=((k+1)/n*100)+"%";k++;setTimeout(tick,1000)};
+ setTimeout(tick,250)}
+function analyze(d){chrome();
  RES=recommend(ans());const tot=PERFUMES.length,aff=tot-RES.overBudget;
- const ms=[tot+"종의 향수를 살펴보고 있어요","예산 안에 드는 "+aff+"종을 추리고 있어요","피할 향을 제외한 "+RES.survivors+"종의 점수를 계산하고 있어요"];
- const ns=[A.likes.join(" · ")+" 중심으로 비교하는 중","예산과 사용 조건을 확인하는 중","취향·지속력·계절·상황을 종합하는 중"];
- d.innerHTML='<div class="msg" id="m"></div><div class="notes" id="n"></div><div class="thin"><i id="t"></i></div>';
- let k=0;const m=$("m"),n=$("n"),t=$("t");
- const tick=()=>{if(k>=3)return go(7);m.style.opacity=0;setTimeout(()=>{m.textContent=ms[k];n.textContent=ns[k];m.style.opacity=1;t.style.width=((k+1)/3*100)+"%";k++;setTimeout(tick,1000)},260)};
- tick()}
+ runAnalysis(d,[
+  {m:tot+"종의 향수를 살펴보고 있어요",n:A.likes.join(" · ")+" 중심으로 비교하는 중"},
+  {m:"예산 안에 드는 "+aff+"종을 추리고 있어요",n:"예산과 사용 조건을 확인하는 중"},
+  {m:"피할 향을 제외한 "+RES.survivors+"종의 점수를 계산하고 있어요",n:"취향·지속력·계절·상황을 종합하는 중"},
+  {m:"추천 결과를 검수하고 있어요",n:"상위 "+RES.items.length+"종이 조건에 맞는지 마지막으로 확인하는 중"}
+ ],()=>go(7))}
+function expertAnalyze(d){chrome();
+ if(!EXPERT_RESULT||!EXPERT_RESULT.taste){go(-2);return}
+ const r=EXPERT_RESULT,names=r.taste.selectedIds.map(id=>PERFUMES.find(p=>p.id===id).koName);
+ const top=r.taste.top.slice(0,3).map(x=>x.name).join(" · ");
+ runAnalysis(d,[
+  {m:"선택한 "+names.length+"종의 향수를 살펴보고 있어요",n:names.join(" · ")},
+  {m:"공통된 향의 특징을 찾고 있어요",n:(top||"어코드")+" 중심으로 비교하는 중"},
+  {m:(r.total-r.excluded)+"종의 향수와 유사도를 계산하고 있어요",n:"공통 어코드와 연관 어코드를 함께 종합하는 중"},
+  {m:"추천 결과를 검수하고 있어요",n:"상위 "+r.items.length+"종이 조건에 맞는지 마지막으로 확인하는 중"}
+ ],()=>go(-4))}
 async function why(r){const base=reasons(r,ans());if(!AI_ENDPOINT)return base;
  try{const x=await fetch(AI_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({answers:ans(),perfume:r.p,reasons:base})});const j=await x.json();return j.text||base}catch(e){return base}}
-function reset(){A.likes=[];A.avoid=[];A.longevity=A.season=A.occasion=A.budget=null;go(-1)}
+function reset(){A.likes=[];A.avoid=[];A.longevity=A.season=A.occasion=A.budget=null;EXPERT_SELECTED=[];EXPERT_RESULT=null;EXPERT_QUERY="";go(-1)}
 function result(d){chrome();$("cnt").textContent="";
  if(!RES||!RES.items.length){d.innerHTML='<h2>조건에 맞는 향수를 찾지 못했어요</h2><p class="sub">예산을 넓히거나 피할 향을 줄여서 다시 시도해 보세요.</p><div class="foot"><button class="btn" id="re">처음부터 다시 하기</button></div>';$("re").onclick=reset;return}
  const T=RES.items[0],p=T.p;
- d.innerHTML='<div class="top1"><div class="pct">추천 점수 '+T.score.toFixed(1)+'점</div><div class="pname">'+esc(p.koName)+'</div><div class="brand">'+esc(p.koBrand)+' · '+esc(p.brand+" "+p.name)+'</div>'
- +'<div class="chips">'+p.keywords.split(",").map(x=>'<em>'+esc(x.trim())+'</em>').join("")+'</div>'
+ d.innerHTML='<div class="top1"><div class="pct">추천 점수 '+T.score.toFixed(1)+'점</div><div class="bname">'+esc(p.koBrand)+'</div><div class="pname">'+esc(nm(p.koName))+'</div><div class="brand">'+esc(p.brand+" "+p.name)+'</div>'
+ +noteList("주요 노트",p.keywords.split(","))
  +(p.everydayAnalogy?'<div class="meta">'+esc(p.everydayAnalogy)+'</div>':'')
  +'<div class="why" id="w">추천 이유를 정리하는 중이에요…</div>'
  +'<div class="meta">'+p.volumeMl+'ml · 정가 '+won(p.listPriceKrw)+' · 지속력 '+esc(p.longevityLevel)+'</div></div>'
- +(RES.items.length>1?'<div class="more"><h3>함께 보면 좋은 향</h3>'+RES.items.slice(1).map(x=>'<div class="row"><div><b>'+esc(x.p.koName)+'</b><span>'+esc(x.p.koBrand)+' · '+esc(x.p.keywords)+'</span></div><div class="p">'+won(x.p.listPriceKrw)+'<br>'+x.score.toFixed(1)+'점</div></div>').join("")+'</div>':'')
+ +(RES.items.length>1?'<div class="more"><h3>함께 보면 좋은 향</h3>'+RES.items.slice(1).map(x=>'<div class="row"><div class="rl"><span class="bname">'+esc(x.p.koBrand)+'</span><b>'+esc(nm(x.p.koName))+'</b>'+noteList("",x.p.keywords.split(",")).replace('class="nrow"','class="nrow" style="margin-top:0"')+'</div><div class="p">'+won(x.p.listPriceKrw)+'<strong>'+x.score.toFixed(1)+'점</strong></div></div>').join("")+'</div>':'')
  +'<div class="note">'+PERFUMES.length+'종 중 예산·피할 향 조건으로 '+(RES.overBudget+RES.avoided)+'종을 제외했어요. 가격은 국내 정가 기준이며 할인가는 반영하지 않아요. 향의 느낌과 지속 시간은 개인과 환경에 따라 다를 수 있어요.</div>'
  +'<div class="foot"><button class="btn ghost" id="re">처음부터 다시 하기</button></div>';
  why(T).then(t=>{const w=$("w");if(w)w.textContent=t});$("re").onclick=reset}
-$("back").onclick=()=>{if(i>0&&i<6)go(i-1)};
+function findExpertProducts(query){
+ const clean=s=>String(s).normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^0-9a-z\u1100-\u11ff\u3130-\u318f\uac00-\ud7af]+/g,'');
+ const q=clean(query);
+ let matches=PERFUMES.filter(p=>!q || clean([p.koName,p.koBrand,p.name,p.brand].join(' ')).includes(q));
+ if(q)matches.sort((a,b)=>{
+   const an=clean(a.koName),bn=clean(b.koName),aen=clean(a.name),ben=clean(b.name);
+   const ar=an.startsWith(q)||aen.startsWith(q)?0:1, br=bn.startsWith(q)||ben.startsWith(q)?0:1;
+   return ar-br||a.id-b.id;
+ });
+ return {all:matches.length,items:matches.slice(0,14)};
+}
+function expertChoose(d){
+ d.innerHTML='<h2>좋아하는 향수를<br>선택해 주세요</h2>'
+  +'<p class="sub">1~5종을 선택할 수 있어요. 2종 이상 고르면 취향의 공통점을 더 잘 파악할 수 있어요.</p>'
+  +'<label class="exp-label" for="perfume-search">향수 검색 (국문·영문)</label>'
+  +'<input id="perfume-search" class="exp-search" type="search" placeholder="예: 디올, Sauvage, 소바쥬" autocomplete="off">'
+  +'<div id="exp-picked" class="exp-picked" aria-live="polite"></div>'
+  +'<div id="exp-search-info" class="exp-search-info" role="status"></div>'
+  +'<div id="exp-search-list" class="exp-search-list"></div>'
+  +'<div class="foot"><button class="btn" id="expert-go" disabled>향수 선택 후 추천받기</button>'
+  +'</div>';
+ const search=$("perfume-search"), picked=$("exp-picked"), list=$("exp-search-list"), info=$("exp-search-info"), action=$("expert-go");
+ search.value=EXPERT_QUERY;
+ const lookup=new Map(PERFUMES.map(p=>[p.id,p]));
+ function paint(){
+   picked.innerHTML=EXPERT_SELECTED.length
+    ?'<div class="exp-label">선택한 향수 ('+EXPERT_SELECTED.length+'/5)</div><div class="exp-chips">'+EXPERT_SELECTED.map(id=>{
+      const p=lookup.get(id);return '<button type="button" class="exp-chip" data-remove="'+id+'" title="선택 해제">'+esc(p.koBrand+' '+p.koName)+' <b>×</b></button>'
+     }).join('')+'</div>'
+    :'<p class="exp-disclaimer">선택한 향수가 아직 없어요.</p>';
+   for(const b of picked.querySelectorAll('[data-remove]')) b.onclick=()=>{EXPERT_SELECTED=EXPERT_SELECTED.filter(id=>id!==Number(b.dataset.remove));paint()};
+   const found=findExpertProducts(search.value);
+   info.textContent=search.value.trim()? '검색 결과 '+found.all+'종':'향수 이름이나 브랜드를 검색해 주세요.';
+   list.innerHTML=found.items.length?found.items.map(p=>{
+     const on=EXPERT_SELECTED.includes(p.id),locked=EXPERT_SELECTED.length>=5&&!on;
+     return '<button type="button" class="exp-item'+(on?' selected':'')+'" data-id="'+p.id+'"'+(locked?' disabled':'')+' aria-pressed="'+on+'">'
+       +'<span class="exp-item-text"><b>'+esc(p.koName)+'</b><small>'+esc(p.koBrand)+' · '+esc(p.name)+'</small></span>'
+       +'<span class="exp-item-mark">'+(on?'✓':'+')+'</span></button>'
+   }).join(''):'<div class="exp-empty">검색 결과가 없어요. 다른 이름으로 검색해 주세요.</div>';
+   for(const b of list.querySelectorAll('[data-id]'))b.onclick=()=>{
+       const id=Number(b.dataset.id),idx=EXPERT_SELECTED.indexOf(id);
+       if(idx>=0)EXPERT_SELECTED.splice(idx,1);
+       else if(EXPERT_SELECTED.length<5)EXPERT_SELECTED.push(id);
+       paint();
+   };
+   action.disabled=EXPERT_SELECTED.length===0;
+   action.textContent=EXPERT_SELECTED.length===0?'향수 선택 후 추천받기':EXPERT_SELECTED.length+'종으로 취향 분석하기';
+ }
+ search.addEventListener('input',()=>{EXPERT_QUERY=search.value;paint()});
+ action.onclick=()=>{if(!EXPERT_SELECTED.length||busy)return;
+   EXPERT_RESULT=ExpertRecommender.recommend(PERFUMES,EXPERT_ACCORD_ROWS,EXPERT_SELECTED);
+   go(-3);
+ };
+ paint();
+}
+function expertResult(d){
+ if(!EXPERT_RESULT || !EXPERT_RESULT.taste){go(-2);return}
+ const r=EXPERT_RESULT,t=r.taste;
+ const picked=t.selectedIds.map(id=>{const p=PERFUMES.find(p=>p.id===id);return '<span class="pk"><span>'+esc(p.koBrand)+'</span>'+esc(nm(p.koName))+'</span>'}).join('');
+ const max=t.top.length?t.top[0].score:1;
+ const bars=t.top.slice(0,6).map(x=>{const pc=Math.max(1,Math.round(x.score/max*100));
+   return '<div class="hb-row"><span class="hb-label"><span class="be" aria-hidden="true">'+(EMO[x.name]||"◦")+'</span>'+esc(x.name)+'</span>'
+    +'<span class="hb-track" role="img" aria-label="'+esc(x.name)+' '+pc+'%"><i data-w="'+pc+'"></i></span><span class="hb-pct">'+pc+'%</span></div>'}).join('');
+ let html='<h2>선택한 향수에서 발견한<br>공통 취향</h2>'
+  +'<div class="pk-list">'+picked+'</div>'
+  +'<div class="exp-summary"><div class="exp-label">선호하는 향의 특징</div><div class="hb">'+bars+'</div>'
+  +'<p class="exp-disclaimer" style="margin-bottom:0">가장 두드러진 향을 100%로 둔 상대 비율이에요.</p></div>';
+ if(!r.items.length){
+   html+='<h3>현재 데이터에서 유사한 향수를 찾지 못했어요.</h3><p class="sub">다른 향수를 추가해 보세요.</p>';
+ }else{
+   html+='<h3 class="exp-section-title">유사한 향수 추천 TOP '+r.items.length+'</h3>';
+   html+=r.items.map((x,n)=>{
+      const p=x.p;
+      return '<article class="exp-result '+(n===0?'exp-first':'')+'">'
+       +'<div class="exp-result-top"><span>'+(n+1)+'위 · 어코드 유사도</span><b>'+x.score.toFixed(1)+'</b></div>'
+       +'<span class="bname" style="margin-top:8px">'+esc(p.koBrand)+'</span><div class="exp-result-name">'+esc(nm(p.koName))+'</div><div class="brand">'+esc(p.brand+' '+p.name)+'</div>'
+       +(x.common.length?noteList('공통 어코드',x.common):'<div class="exp-matched" style="margin-top:12px">관련 어코드 특성이 일부 반영됨</div>')
+       +'<div class="meta">지속력 '+esc(p.longevityLevel)+' · '+p.volumeMl+'ml · 정가 '+won(p.listPriceKrw)+'</div>'
+       +'</article>';
+   }).join('');
+ }
+ html+='<div class="foot"><button class="btn ghost" id="exp-edit">선택한 향수 수정하기</button><button class="btn ghost exp-reset" id="exp-reset">처음 화면으로</button></div>';
+ d.innerHTML=html;
+ requestAnimationFrame(()=>requestAnimationFrame(()=>d.querySelectorAll(".hb-track i").forEach((e,k)=>{e.style.transitionDelay=(k*70)+"ms";e.style.width=e.dataset.w+"%"})));
+ $("exp-edit").onclick=()=>go(-2);
+ $("exp-reset").onclick=reset;
+}
+
+$("back").onclick=()=>{if(i===-2)go(-1);else if(i===-4)go(-2);else if(i>=0&&i<6)go(i===0?-1:i-1)};
 render();
 </script>
 </body>
