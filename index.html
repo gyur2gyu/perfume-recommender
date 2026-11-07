@@ -76,7 +76,7 @@ h1,h2,h3{font-weight:500}
 h1{font-size:42px;line-height:1.35}
 h2{font-size:27px;line-height:1.45}
 .qn{color:var(--acc);font-size:14px;font-weight:500;margin-bottom:12px}
-.bar{height:3px;background:var(--line);-webkit-mask:repeating-linear-gradient(90deg,#000 0,#000 calc(16.667% - 5px),transparent calc(16.667% - 5px),transparent 16.667%);mask:repeating-linear-gradient(90deg,#000 0,#000 calc(16.667% - 5px),transparent calc(16.667% - 5px),transparent 16.667%)}
+.bar{height:3px;background:var(--line);-webkit-mask:repeating-linear-gradient(90deg,#000 0,#000 calc(33.3333% - 5px),transparent calc(33.3333% - 5px),transparent 33.3333%);mask:repeating-linear-gradient(90deg,#000 0,#000 calc(33.3333% - 5px),transparent calc(33.3333% - 5px),transparent 33.3333%)}
 .bar i{top:0;height:3px;background:var(--acc)}
 .cnt{display:none}
 .opt{background:var(--sf);border:1px solid var(--line);border-radius:14px;padding:16px}
@@ -239,11 +239,43 @@ h1,h2,h3{word-break:keep-all}
 
 /* 안내 문구: 문장 단위 줄바꿈 + 균형 있는 줄 나눔 */
 .sub,.intro p,.exp-disclaimer{text-wrap:balance;word-break:keep-all}
+
+/* 이전 버튼: 아이콘 + 진한 글자 + 테두리 알약, 터치 영역 확대 */
+.top{height:48px}
+.back{position:relative;display:inline-flex;align-items:center;gap:1px;height:36px;padding:0 14px 0 8px;border:1px solid var(--line);border-radius:99px;background:var(--sf);color:var(--ink);font-size:14px;font-weight:700;line-height:1;transition:background .15s,border-color .15s,transform .15s}
+.back::after{content:"";position:absolute;inset:-6px -8px}
+.back svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.back:hover{background:var(--tint);border-color:var(--acc)}
+.back:active{transform:scale(.96)}
+
+/* 상단 영역 비율: 로고 - 이전/진행바 - 본문 간격 정리 */
+.top{margin-top:18px;height:40px}
+main{padding-top:20px}
+
+/* 추천 결과 안내 카드 */
+.notice{background:var(--sf);border:1px solid var(--line);border-radius:16px;padding:16px 16px 16px;margin:0 0 14px}
+.nt-flow{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.nt-pill{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px 0 8px;border-radius:99px;font-size:13px;font-weight:700;white-space:nowrap}
+.nt-pill .oe{font-size:15px;line-height:1}
+.nt-pill.off{border:1px dashed var(--mut);color:var(--mut)}
+.nt-pill.on{background:var(--tint);color:var(--acc)}
+.nt-arr{flex:none;width:18px;height:18px;fill:none;stroke:var(--mut);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nt-title{font-size:16px;font-weight:800;line-height:1.45;letter-spacing:-.02em;word-break:keep-all;margin:0 0 6px}
+.nt-body{font-size:14px;line-height:1.65;color:var(--mut);word-break:keep-all;margin:0}
+.nt-body b{color:var(--ink);font-weight:700}
+.nt-act{margin-top:14px;height:46px;font-size:15px}
+
+/* 안내 카드: 중앙 정렬 */
+.notice{text-align:center}
+.nt-flow{justify-content:center}
+.nt-plus{color:var(--mut);font-weight:700;font-size:16px;line-height:1}
+.nt-body,.nt-title{text-wrap:balance}
+.nt-act{display:flex;align-items:center;justify-content:center;width:fit-content;min-width:200px;margin:16px auto 0;padding:0 24px}
 </style>
 </head>
 <body>
 <div class="app"><div class="bt"><svg class="bi" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="11"/><path d="M6.2 11.4l3.3 3.3 6.3-6.6" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>ScentPick</span></div>
-  <div class="top"><button class="back" id="back">이전</button><div class="bar"><i id="fill"></i></div><div class="cnt" id="cnt"></div></div>
+  <div class="top"><button class="back" id="back" aria-label="이전 단계로"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4.5L7 10l5.5 5.5"/></svg><span>이전</span></button><div class="bar"><i id="fill"></i></div><div class="cnt" id="cnt"></div></div>
   <main id="main"></main>
 </div>
 <script>
@@ -323,7 +355,9 @@ const ExpertRecommender = (() => {
       ranked.push({p, profile:row, score:Math.round(sim*1000)/10,
                    similarity:sim, common:common.slice(0,4), related});
     }
-    ranked.sort((a,b)=>b.similarity-a.similarity||b.common.length-a.common.length||a.p.id-b.p.id);
+    const tbSeed=taste.selectedIds.slice().sort((x,y)=>x-y).join(",");
+    const tbHash=id=>{const t=tbSeed+"|"+id;let h=2166136261;for(let k=0;k<t.length;k++){h^=t.charCodeAt(k);h=Math.imul(h,16777619)}return h>>>0};
+    ranked.sort((a,b)=>b.similarity-a.similarity||b.common.length-a.common.length||tbHash(a.p.id)-tbHash(b.p.id));
     return {taste, items:ranked.slice(0,maxResults), candidates:ranked.length,
             total:perfumes.length, excluded:selected.size};
   }
@@ -348,12 +382,29 @@ function evaluate(p,a){
  const earned=scent+(lon??0)+(season??0)+(occasion??0);
  return {p,scent,lon,season,occasion,activeMax,earned,score:Math.round(earned/activeMax*1000)/10};
 }
+function hashTieInput(str){
+ let h=2166136261;
+ for(let j=0;j<str.length;j++){h^=str.charCodeAt(j);h=Math.imul(h,16777619)}
+ return h>>>0;
+}
 function recommend(a){
  const limit=a.budget==='any'?Infinity:Number(a.budget);
  const affordable=PERFUMES.filter(p=>p.listPriceKrw<=limit);
  const kept=affordable.filter(p=>!a.avoid.includes(p.mainImage));
- const evaluated=kept.map(p=>evaluate(p,a)).sort((x,y)=>y.score-x.score||y.scent-x.scent||y.earned-x.earned||x.p.id-y.p.id);
- return {items:evaluated.slice(0,5),survivors:kept.length,overBudget:PERFUMES.length-affordable.length,avoided:affordable.length-kept.length};
+ const tieSeed=hashTieInput([a.first,a.second,a.longevity,a.season,a.occasion,a.budget,...[...a.avoid].sort()].join("|"));
+ const tieBreak=id=>{
+   let x=(tieSeed^Math.imul(id,0x9e3779b9))>>>0;
+   x=Math.imul(x^(x>>>16),0x85ebca6b);
+   x=Math.imul(x^(x>>>13),0xc2b2ae35);
+   return (x^(x>>>16))>>>0;
+ };
+ const byScore=(x,y)=>y.score-x.score||y.scent-x.scent||y.earned-x.earned||tieBreak(x.p.id)-tieBreak(y.p.id);
+ const evaluated=kept.map(p=>evaluate(p,a)).sort(byScore);
+ // 고른 향 계열과 전혀 관련 없는(향 점수 0) 향수는 지속력·계절 점수만으로 올라오지 않도록 추천에서 제외
+ const matched=evaluated.filter(x=>x.scent>0);
+ // 예산 때문에 빠진, 취향에 맞는 향수(예산 안내용)
+ const stretch=PERFUMES.filter(p=>p.listPriceKrw>limit&&!a.avoid.includes(p.mainImage)).map(p=>evaluate(p,a)).filter(x=>x.scent>0).sort(byScore);
+ return {items:matched.slice(0,5),matchedCount:matched.length,stretch:stretch.slice(0,3),stretchMin:stretch.length?Math.min(...stretch.map(x=>x.p.listPriceKrw)):null,survivors:kept.length,overBudget:PERFUMES.length-affordable.length,avoided:affordable.length-kept.length};
 }
 function reasons(r,a){
  const p=r.p,parts=[];
@@ -389,7 +440,15 @@ const noteList=(label,arr)=>'<div class="nrow">'+(label?'<span class="nl">'+labe
 const ans=()=>({first:A.likes[0],second:A.likes[1],avoid:A.avoid,longevity:A.longevity,season:A.season,occasion:A.occasion,budget:A.budget});
 function chrome(){
  $("back").style.visibility=((i>=0&&i<6)||i===-2||i===-4)?"visible":"hidden";
- $("fill").style.width=((i===-4||i===-3)?100:(i===-2?33:(i<0?0:Math.min(i+1,6)/6*100)))+"%";
+ $("fill").parentElement.style.visibility=(i===-1)?"hidden":"visible"; // 첫 화면은 진행바 숨김(자리는 유지해 화면 전환 시 흔들림 방지)
+ // 두 경로 공통: [입력] → [분석] → [결과] 3칸. 입력 칸은 단계 수(질문 6개 / 향수 선택 1번)만큼 나뉘어 차오른다.
+ let w;
+ if(i===-1)w=0;
+ else if(i===-2)w=1/3;                 // 향수 선택: 입력 1/1
+ else if(i===-3||i===6)w=2/3;          // 검수(분석) 중
+ else if(i>=0&&i<6)w=(i+1)/6/3;        // 질문 k/6 → 첫 칸 안에서 차오름
+ else w=1;                             // 결과
+ $("fill").style.width=(w*100)+"%";
  $("cnt").textContent=(i>=0&&i<6)?(i+1)+"/6":"";
 }
 let busy=false,runId=0;
@@ -454,18 +513,70 @@ function expertAnalyze(d){chrome();
 async function why(r){const base=reasons(r,ans());if(!AI_ENDPOINT)return base;
  try{const x=await fetch(AI_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({answers:ans(),perfume:r.p,reasons:base})});const j=await x.json();return j.text||base}catch(e){return base}}
 function reset(){A.likes=[];A.avoid=[];A.longevity=A.season=A.occasion=A.budget=null;EXPERT_SELECTED=[];EXPERT_RESULT=null;EXPERT_QUERY="";go(-1)}
+// 1순위 계열이 추천 맨 위(주요 향)가 아닐 때, 이유와 다음 행동을 알려주는 안내
+const rowHtml=x=>'<div class="row"><div class="rl"><span class="bname">'+esc(x.p.koBrand)+'</span><b>'+esc(nm(x.p.koName))+'</b>'+noteList("",x.p.keywords.split(",")).replace('class="nrow"','class="nrow" style="margin-top:0"')+'</div><div class="p">'+won(x.p.listPriceKrw)+'<strong>'+x.score.toFixed(1)+'점</strong></div></div>';
+function matchNotice(T){
+ const a=ans(),F=a.first,S=a.second,main=T.p.mainImage;
+ if(!F||main===F)return null;
+ const fAll=PERFUMES.filter(p=>p.mainImage===F);
+ if(!fAll.length)return null;
+ const limit=a.budget==="any"?Infinity:Number(a.budget);
+ const inLimit=fAll.filter(p=>p.listPriceKrw<=limit).length;
+ const cheapest=Math.min(...fAll.map(p=>p.listPriceKrw));
+ const bLabel=(OPT.budget.find(o=>o.value===String(a.budget))||{}).label||"";
+ const em=c=>'<i class="oe" aria-hidden="true">'+(CE[c]||"◦")+'</i>';
+ const flow='<div class="nt-flow"><span class="nt-pill off">'+em(F)+esc(F)+'</span>'
+  +'<svg class="nt-arr" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5.5L15.5 10 11 14.5"/></svg>'
+  +'<span class="nt-pill on">'+em(main)+esc(main)+'</span></div>';
+ let title,body,act=null;
+ if(inLimit===0){
+  const how=main===S?'그래서 두 번째로 끌린 <b>'+esc(S)+'</b> 계열을 먼저 보여드렸어요.'
+   :T.p.secondaryImage===F?'그래서 '+esc(F)+' 향이 함께 느껴지는 <b>'+esc(main)+'</b> 계열을 먼저 보여드렸어요.'
+   :T.p.secondaryImage===S?'그래서 두 번째로 끌린 '+esc(S)+' 향이 함께 느껴지는 <b>'+esc(main)+'</b> 계열을 먼저 보여드렸어요.'
+   :'그래서 다른 조건에 가장 잘 맞는 <b>'+esc(main)+'</b> 계열을 먼저 보여드렸어요.';
+  title=bLabel+'에는 '+esc(F)+' 중심 향이 없어요';
+  body=how+' '+esc(F)+' 계열은 <b>'+won(cheapest)+'</b>부터 있어요.';
+  const next=OPT.budget.find(o=>o.value!=="any"&&Number(o.value)>=cheapest)||OPT.budget.find(o=>o.value==="any");
+  const nl=next.value==="any"?Infinity:Number(next.value);
+  const n=fAll.filter(p=>p.listPriceKrw<=nl).length;
+  act={v:next.value,text:(next.value==="any"?"예산 제한 없이 ":next.label+"로 ")+F+" "+n+"종 보기"};
+ }else{
+  const conds=[a.longevity!=="any"&&"지속력",a.season!=="any"&&"계절",a.occasion!=="any"&&"사용 상황"].filter(Boolean);
+  title=esc(F)+' 향보다 조건에 더 잘 맞는 향이 위에 있어요';
+  body=esc(F)+' 계열이 중심인 향수는 '+(a.budget==="any"?'':'예산 안에 ')+inLimit+'종 있어요. '+(conds.length?conds.join("·")+' 조건까지 함께 맞춰 ':'전체 조건을 함께 맞춰 ')+'<b>'+esc(main)+'</b> 계열을 먼저 보여드렸어요.';
+ }
+ return {act,html:'<aside class="notice" role="note">'+flow+'<h3 class="nt-title">'+title+'</h3><p class="nt-body">'+body+'</p>'
+  +(act?'<button type="button" class="btn ghost nt-act" id="nt-act">'+esc(act.text)+'</button>':'')+'</aside>'};
+}
+// 예산 안에 취향에 맞는 향수가 하나도 없을 때
+function budgetEmpty(d){
+ const a=ans(),F=a.first,S=a.second,cheapest=RES.stretchMin;
+ const bLabel=(OPT.budget.find(o=>o.value===String(a.budget))||{}).label||"";
+ const next=OPT.budget.find(o=>o.value!=="any"&&Number(o.value)>=cheapest)||OPT.budget.find(o=>o.value==="any");
+ const tier=recommend({...a,budget:next.value}),cnt=tier.matchedCount,near=tier.items.slice(0,3);
+ const em=c=>'<i class="oe" aria-hidden="true">'+(CE[c]||"◦")+'</i>';
+ d.innerHTML='<aside class="notice" role="note"><div class="nt-flow"><span class="nt-pill off">'+em(F)+esc(F)+'</span><span class="nt-plus" aria-hidden="true">+</span><span class="nt-pill off">'+em(S)+esc(S)+'</span></div>'
+  +'<h3 class="nt-title">'+bLabel+'에서는 취향에 맞는 향을 찾지 못했어요</h3>'
+  +'<p class="nt-body">취향에 맞는 향수는 <b>'+won(cheapest)+'</b>부터 있어요. 예산을 조금만 늘리면 만나볼 수 있어요.</p>'
+  +'<button type="button" class="btn ghost nt-act" id="nt-act">'+(next.value==="any"?"예산 제한 없이 ":next.label+"로 ")+cnt+'종 보기</button></aside>'
+  +'<div class="more"><h3>예산을 올리면 만날 수 있는 향</h3>'+near.map(rowHtml).join("")+'</div>'
+  +'<div class="note">가격은 국내 정가 기준이며 할인가는 반영하지 않아요. 향의 느낌과 지속 시간은 개인과 환경에 따라 다를 수 있어요.</div>'
+  +'<div class="foot"><button class="btn ghost" id="re">처음부터 다시 하기</button></div>';
+ $("nt-act").onclick=()=>{A.budget=next.value;go(6)};$("re").onclick=reset}
 function result(d){chrome();$("cnt").textContent="";
+ if(RES&&!RES.items.length&&RES.stretch&&RES.stretch.length)return budgetEmpty(d);
  if(!RES||!RES.items.length){d.innerHTML='<h2>조건에 맞는 향수를 찾지 못했어요</h2><p class="sub">예산을 넓히거나 피할 향을 줄여서 다시 시도해 보세요.</p><div class="foot"><button class="btn" id="re">처음부터 다시 하기</button></div>';$("re").onclick=reset;return}
- const T=RES.items[0],p=T.p;
- d.innerHTML='<div class="top1"><div class="pct">추천 점수 '+T.score.toFixed(1)+'점</div><div class="bname">'+esc(p.koBrand)+'</div><div class="pname">'+esc(nm(p.koName))+'</div><div class="brand">'+esc(p.brand+" "+p.name)+'</div>'
+ const T=RES.items[0],p=T.p,N=matchNotice(T);
+ d.innerHTML=(N?N.html:'')+'<div class="top1"><div class="pct">추천 점수 '+T.score.toFixed(1)+'점</div><div class="bname">'+esc(p.koBrand)+'</div><div class="pname">'+esc(nm(p.koName))+'</div><div class="brand">'+esc(p.brand+" "+p.name)+'</div>'
  +noteList("주요 노트",p.keywords.split(","))
  +(p.everydayAnalogy?'<div class="meta">'+esc(p.everydayAnalogy)+'</div>':'')
  +'<div class="why" id="w">추천 이유를 정리하는 중이에요…</div>'
  +'<div class="meta">'+p.volumeMl+'ml · 정가 '+won(p.listPriceKrw)+' · 지속력 '+esc(p.longevityLevel)+'</div></div>'
- +(RES.items.length>1?'<div class="more"><h3>함께 보면 좋은 향</h3>'+RES.items.slice(1).map(x=>'<div class="row"><div class="rl"><span class="bname">'+esc(x.p.koBrand)+'</span><b>'+esc(nm(x.p.koName))+'</b>'+noteList("",x.p.keywords.split(",")).replace('class="nrow"','class="nrow" style="margin-top:0"')+'</div><div class="p">'+won(x.p.listPriceKrw)+'<strong>'+x.score.toFixed(1)+'점</strong></div></div>').join("")+'</div>':'')
+ +(RES.items.length>1?'<div class="more"><h3>함께 보면 좋은 향</h3>'+RES.items.slice(1).map(rowHtml).join("")+'</div>':'')
  +'<div class="note">'+PERFUMES.length+'종 중 예산·피할 향 조건으로 '+(RES.overBudget+RES.avoided)+'종을 제외했어요. 가격은 국내 정가 기준이며 할인가는 반영하지 않아요. 향의 느낌과 지속 시간은 개인과 환경에 따라 다를 수 있어요.</div>'
  +'<div class="foot"><button class="btn ghost" id="re">처음부터 다시 하기</button></div>';
- why(T).then(t=>{const w=$("w");if(w)w.textContent=t});$("re").onclick=reset}
+ why(T).then(t=>{const w=$("w");if(w)w.textContent=t});$("re").onclick=reset;
+ if(N&&N.act)$("nt-act").onclick=()=>{A.budget=N.act.v;go(6)}}
 function findExpertProducts(query, initialRandomOrder){
  const clean=s=>String(s).normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^0-9a-z\u1100-\u11ff\u3130-\u318f\uac00-\ud7af]+/g,'');
  const q=clean(query);
