@@ -92,6 +92,9 @@ h2{font-size:27px;line-height:1.45}
 .why{font-family:var(--sans);font-weight:400;font-size:16px;line-height:1.85}
 .thin{height:3px;background:var(--line)}
 .thin i{top:0;height:3px;background:var(--acc)}
+/* 모바일: 연녹색 배경 대신 화사한 흰색 (PC 카드 레이아웃은 그대로) */
+@media (max-width:719px) and (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#fff}}
+@media (max-width:719px){:root[data-theme="light"]{--bg:#fff}}
 @media (min-width:720px){body{display:flex;align-items:center}.app{width:100%;max-width:440px;min-height:0;height:min(820px,92vh);background:var(--sf);border:1px solid var(--line);border-radius:28px;padding:26px 26px 30px;overflow-y:auto;box-shadow:0 20px 60px rgba(29,27,38,.08)}}
 h1,h2,h3,.pname,.stage .msg{font-weight:800;letter-spacing:-.03em}
 h1{font-size:44px;line-height:1.25}
